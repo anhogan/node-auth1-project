@@ -1,7 +1,8 @@
-const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 
-const Users = require('./user-model');
+const router = require('express').Router();
+
+const Users = require('../users/user-model');
 
 router.post('/register', (req, res) => {
   const userData = req.body;
@@ -18,7 +19,7 @@ router.post('/register', (req, res) => {
         username: user.username
       };
 
-      res.status(200).json(user);
+      res.status(201).json(user);
     })
     .catch(error => {
       res.status(500).json(error);
@@ -26,15 +27,17 @@ router.post('/register', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-  Users.findBy(req.body.username).first()
+  const { username, password } = req.body;
+
+  Users.findBy({ username })
     .then(user => {
-      if (user && bcrypt.compareSync(req.body.password, user.password)) {
+      if (user && bcrypt.compareSync(password, user.password)) {
         req.session.user = {
           id: user.id,
           username: user.username
         };
 
-        res.status(200).json({ message: `Successfully logged in` });
+        res.status(200).json({ message: `Welcome ${user.username}` });
       } else {
         res.status(401).json({ message: 'You shall not pass!' });
       }
